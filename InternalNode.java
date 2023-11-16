@@ -49,7 +49,7 @@ public class InternalNode extends Node{
 
 class maximizer extends InternalNode {
     public double maxNode(){
-        double num = array[0].getValue();
+        double num = array[0].getValue(); 
         if(array.length>1){
             for(int i=1; i<array.length; i++){
                 if(array[i].getValue()>num){    /// PRIVATE???
