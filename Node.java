@@ -9,7 +9,7 @@ public class Node {
         value = 0;
         parent= null;
     }
-    public Node(float value)
+    public Node(double value)
     {
         this.value = value;
         parent=null;
