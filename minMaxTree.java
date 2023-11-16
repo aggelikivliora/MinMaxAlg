@@ -1,9 +1,6 @@
 package ce326.hw2;
 import java.io.*;
-//import static java.lang.Integer.MAX_VALUE;
-//import static java.lang.Integer.MIN_VALUE;
 import java.util.Scanner;
-import org.json.JSONObject;
 import java.util.*;
 import org.json.*;
 public class minMaxTree {
@@ -15,30 +12,24 @@ public class minMaxTree {
     public minMaxTree(){
         root=null;
     }
-    public minMaxTree(String jsonString){
-        try {
-            JSONObject myJsonObject=new JSONObject(jsonString);
-        } catch (IllegalArgumentException e) {
-            System.out.println("\nInvalid format\n\n");
-        }
-        
+    public minMaxTree(String jsonString) throws JSONException,IllegalArgumentException{
         //CREATE TREE
-        JSONObject obj = new JSONObject(jsonString);
-        Object j = buildTree(obj);
-        if(j instanceof maximizer){
-            root = (maximizer)j;
-        }
-        if(j instanceof minimizer){
-            root = (minimizer)j;
-        }
-        //System.out.println("\n minmax="+minMax());
-        //System.out.println(" numNodes="+size());
-        //ArrayList<Integer> path = new ArrayList<Integer>();
-        //path = optimalPath();
-        //System.out.println(path);
+        JSONObject obj;
+        //try{
+            obj= new JSONObject(jsonString);
+            Object j = buildTree(obj);
+            if(j instanceof maximizer){
+                root = (maximizer)j;
+            }
+            if(j instanceof minimizer){
+                root = (minimizer)j;
+            }
+        //}catch(JSONException | IllegalArgumentException e){
+            //System.out.println("\nInvalid format\n\n");
+        ////}
     } 
     
-    public minMaxTree(File file) throws FileNotFoundException{
+    public minMaxTree(File file) throws FileNotFoundException, JSONException{
         
         StringBuilder strBuilder = new StringBuilder();
         try(Scanner sc = new Scanner(file)) {
@@ -55,22 +46,23 @@ public class minMaxTree {
             //ex.printStackTrace();
         }*/
         String jsonString = strBuilder.toString();
-        
+        JSONObject myJsonObject;
         try {
-            JSONObject myJsonObject=new JSONObject(jsonString);
+            myJsonObject=new JSONObject(jsonString);
+            Object j = buildTree(myJsonObject);
+            if(j instanceof maximizer){
+                root = (maximizer)j;
+            }
+            else{
+                root = (minimizer)j;
+            }
         } catch (IllegalArgumentException e) {
             System.out.println("\nInvalid format\n\n");
         }
-        //CREATE TREE
-        JSONObject obj = new JSONObject(jsonString);
-        Object j = buildTree(obj);
-        if(j instanceof maximizer){
-            root = (maximizer)j;
-        }
-        
     }
     
-    public Object buildTree(JSONObject obj){
+    public Object buildTree(JSONObject obj) throws JSONException{
+        //String type = obj.getString("type");
         String type = obj.getString("type");
         //System.out.println(type);
         
@@ -92,7 +84,8 @@ public class minMaxTree {
                 else if("leaf".equals(value)){
                     InternalNode curr = new InternalNode();
                     curr.setParent(max);
-                    float num = arr.getJSONObject(i).getFloat("value");
+                    //float num = arr.getJSONObject(i).getFloat("value");
+                    double num = arr.getJSONObject(i).getDouble("value");
                     curr.setValue(num);
                     max.insertChild(i, curr);
                 }
@@ -118,7 +111,7 @@ public class minMaxTree {
                 if("leaf".equals(value)){
                     InternalNode curr = new InternalNode();
                     curr.setParent(min);
-                    float num = arr.getJSONObject(i).getFloat("value");
+                    double num = arr.getJSONObject(i).getDouble("value");
                     curr.setValue(num);
                     min.insertChild(i, curr);
                 }
@@ -135,7 +128,8 @@ public class minMaxTree {
     }
     public void minMaxRecursive(Object nd){
         if(nd instanceof maximizer){
-            maximizer curr =(maximizer)nd;
+            maximizer curr;
+            curr = (maximizer)nd;
             if(curr.array!=null){
                 for(int i=0; i<curr.getChildrenSize(); i++){
                     minMaxRecursive(curr.getChild(i));
@@ -146,7 +140,8 @@ public class minMaxTree {
             return;
         }
         if(nd instanceof minimizer){
-            minimizer curr = (minimizer)nd;
+            minimizer curr;
+            curr = (minimizer)nd;
             if(curr.array!=null){
                 for(int i=0; i<curr.getChildrenSize(); i++){
                     minMaxRecursive(curr.getChild(i));
@@ -165,14 +160,16 @@ public class minMaxTree {
     }
     public int sizeCount(Object nd, int num){
         if(nd instanceof maximizer){
-            maximizer curr = (maximizer)nd;
+            maximizer curr;
+            curr = (maximizer)nd;
             num++;
             for(int i=0; i<curr.getChildrenSize(); i++){
                 num = sizeCount(curr.getChild(i),num);
             }         
         }
         else if(nd instanceof minimizer){
-            minimizer curr =(minimizer)nd;
+            minimizer curr ;
+            curr = (minimizer)nd;
             num++;
             for(int i=0; i<curr.getChildrenSize(); i++){
                 num = sizeCount(curr.getChild(i),num);
@@ -186,11 +183,12 @@ public class minMaxTree {
     
     public ArrayList<Integer> optimalPath(){
         ArrayList<Integer> path = new ArrayList<>();
-        Object nd = new Object();
+        Object nd ;
         nd = root;
         while(true){
             if(nd instanceof maximizer){
-                maximizer curr = (maximizer)nd;
+                maximizer curr;
+                curr = (maximizer)nd;
                 for(int i=0; i<curr.getChildrenSize(); i++){
                     if(curr.getChild(i).getValue()==root.getValue()){
                         path.add(i);
@@ -200,7 +198,8 @@ public class minMaxTree {
                 }
             }
             else if(nd instanceof minimizer){
-                minimizer curr = (minimizer)nd;
+                minimizer curr;
+                curr = (minimizer)nd;
                 for(int i=0; i<curr.getChildrenSize(); i++){
                     if(curr.getChild(i).getValue()==root.getValue()){
                         path.add(i);
@@ -221,19 +220,22 @@ public class minMaxTree {
         StringBuilder sb = new StringBuilder();
         int flag = 0;
         flag = isNotInitialised(root,flag);
-        sb = treeToStringB(root,sb, flag);
+        sb = treeToStringB(root,sb, flag, 2);
         return sb+"";
     }
+    
     public int isNotInitialised(Object nd, int flag){
         if(nd instanceof maximizer){
-            maximizer curr = (maximizer)nd;
+            maximizer curr;
+            curr = (maximizer)nd;
             for(int i=0; i<curr.getChildrenSize(); i++){
                 if(curr.getValue()!=0){flag=1;}
                 flag=isNotInitialised(curr.getChild(i),flag);
             }
         }
         if(nd instanceof minimizer){
-            minimizer curr = (minimizer)nd;
+            minimizer curr;
+            curr = (minimizer)nd;
             for(int i=0; i<curr.getChildrenSize(); i++){
                 if(curr.getValue()!=0){flag=1;}
                 flag=isNotInitialised(curr.getChild(i),flag);
@@ -241,64 +243,104 @@ public class minMaxTree {
         }
         return flag;
     }
-    public StringBuilder treeToStringB(Object nd, StringBuilder sb, int flag){
+    
+    public StringBuilder treeToStringB(Object nd, StringBuilder sb, int flag, int vathos){
        if(nd instanceof maximizer){
-            maximizer curr = (maximizer)nd;
-            sb.append("{"+'"'+"type"+'"'+":"+'"'+"max"+'"'+',');
+            maximizer curr;
+            curr = (maximizer)nd;
+            sb.append(spaces(vathos-2));
+            sb.append("{\n");
+            sb.append(spaces(vathos));
+            sb.append('"'+"type"+'"'+":"+'"'+"max"+'"'+",\n");
             if(flag == 1){
-                sb.append('"'+"value"+'"'+"=");
+                sb.append(spaces(vathos));
+                sb.append('"'+"value"+'"'+": ");
                 sb.append(curr.getValue());
                 sb.append(",");
+                sb.append("\n");
             }
-            sb.append('"'+"children"+'"'+":[");
+            sb.append(spaces(vathos));
+            sb.append('"'+"children"+'"'+": [\n");
+            
             for(int i=0; i<curr.getChildrenSize(); i++){
-                sb = treeToStringB(curr.getChild(i), sb,flag);
+                sb = treeToStringB(curr.getChild(i), sb,flag, vathos+2);
                 if(i!=curr.getChildrenSize()-1){
-                    sb.append(",");
+                    sb.append(",\n");
                 }
-            }    
-            sb.append("]}");
+            }   
+            sb.append("\n");
+            sb.append(spaces(vathos));
+            sb.append("]\n");
+            sb.append(spaces(vathos-2));
+            sb.append("}");
         }
         else if(nd instanceof minimizer){
-            minimizer curr =(minimizer)nd;
-            sb.append("{"+'"'+"type"+'"'+":"+'"'+"min"+'"'+",");
+            minimizer curr;
+            curr =(minimizer)nd;
+            sb.append(spaces(vathos-2));
+            sb.append("{\n");
+            sb.append(spaces(vathos));
+            sb.append('"'+"type"+'"'+": "+'"'+"min"+'"'+",\n");
             if(flag==1){
-                sb.append('"'+"value"+'"'+"=");
+                sb.append(spaces(vathos));
+                sb.append('"'+"value"+'"'+": ");
                 sb.append(curr.getValue());
                 sb.append(",");
+                sb.append("\n");
             }
-            sb.append('"'+"children"+'"'+":[");
+            sb.append(spaces(vathos));
+            sb.append('"'+"children"+'"'+": [\n");
+            
             for(int i=0; i<curr.getChildrenSize(); i++){
-                sb = treeToStringB(curr.getChild(i),sb,flag);
+                sb = treeToStringB(curr.getChild(i),sb,flag, vathos+2);
                 if(i!=curr.getChildrenSize()-1){
-                    sb.append(",");
+                    sb.append(",\n");
                 }
             }
-            sb.append("]}");
+            sb.append("\n");
+            sb.append(spaces(vathos));
+            sb.append("]\n");
+            sb.append(spaces(vathos-2));
+            sb.append("}");
         }
         else{
             InternalNode curr = (InternalNode)nd;
             double num = curr.getValue();
-            sb.append("{"+'"'+"type"+'"'+":"+'"'+"leaf"+'"'+","+'"'+"value"+":");
+            sb.append(spaces(vathos-2));
+            sb.append("{\n");
+            sb.append(spaces(vathos));
+            sb.append('"'+"type"+'"'+": "+'"'+"leaf"+'"'+",\n");
+            sb.append(spaces(vathos));
+            sb.append('"'+"value"+'"'+": ");
             sb.append(num);
+            sb.append("\n");
+            sb.append(spaces(vathos-2));
             sb.append("}");
             return sb;
         } 
        return sb;
     }
     
+    public String spaces(int num){
+        StringBuilder strb = new StringBuilder("");
+        for(int i=0; i<num; i++){
+            strb.append(" ");
+        }
+        return strb.toString();
+    }
+    
     public void toFile(File file){
         try {
             file.createNewFile();
-            FileWriter myWriter = new FileWriter(file);
-            String str = toString();
-            System.out.println(str);
-            myWriter.write(str);
-            myWriter.close();
+            try (FileWriter myWriter = new FileWriter(file)) {
+                String str = toString();
+                System.out.println(str);
+                myWriter.write(str);
+            }
+            System.out.println("\nOK\n\n");
         } catch (IOException e) {
             System.out.println("\nUnable to write '"+file+"'\n\n");
-            e.printStackTrace();
         }
-        
     }
 }
+
